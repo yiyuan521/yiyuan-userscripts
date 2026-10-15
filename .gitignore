@@ -1,0 +1,21 @@
+# --- 编辑器与 IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- 操作系统 ---
+.DS_Store
+Thumbs.db
+
+# --- 依赖与构建产物 ---
+node_modules/
+dist/
+build/
+*.log
+.eslintcache
+
+# --- 本地临时文件 ---
+*.local
+*.bak
+tempCodeRunnerFile.*
