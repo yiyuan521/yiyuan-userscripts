@@ -17,10 +17,11 @@
 | :--- | :--- | :---: |
 | **PokéSurvivor 中文化**（西语源 · 推荐） | [PokéSurvivor](https://pokesurvivor.com) 的界面 / 任务 / 道具 / 招式 / 局内文字汉化。以游戏**原生西语**为源 | [**安装**](https://raw.githubusercontent.com/yiyuan521/yiyuan-userscripts/master/pokesurvivor/pokesurvivor-zh-es.user.js) |
 | **PokéSurvivor 中文化**（英语源） | 同上，但以游戏自带的**英文**文本为源（作者英文层比较完整时用） | [**安装**](https://raw.githubusercontent.com/yiyuan521/yiyuan-userscripts/master/pokesurvivor/pokesurvivor-zh-en.user.js) |
+| **PokéSurvivor 小地图** | 局内半透明小地图：地形、敌人 / Boss / 闪光、宝箱 / 祭坛 / 泉眼、裂缝、陷阱、队友。`M` 开关，`Alt` + 拖动挪位置 / 缩放。**只读**，不改游戏数据 | [**安装**](https://raw.githubusercontent.com/yiyuan521/yiyuan-userscripts/master/pokesurvivor/pokesurvivor-minimap.user.js) |
 
 > 点「安装」会直接打开 Tampermonkey 的安装页。还没装扩展的话，先装
 > [Tampermonkey](https://www.tampermonkey.net/) 或 [Violentmonkey](https://violentmonkey.github.io/)。
-> 词表是**离线**的，脚本不联网、不发任何请求。
+> 词表是**离线**的，脚本不联网、不发任何请求（小地图也一样，它只读游戏里的状态）。
 > **如果一键安装失败，请复制对应脚本代码，手动进行添加。**
 
 ---
@@ -50,6 +51,45 @@
 
 欢迎开 [Issue](https://github.com/yiyuan521/yiyuan-userscripts/issues)，附上**截图**和**那句话**，再标一下用的是哪一份脚本就行。宝可梦、招式、道具名一律以官方简体中文为准；如果某处你更习惯别的叫法（比如道具 `Leftovers` 要「剩饭」还是「吃剩的东西」），也直接说。
 
+---
+
+## PokéSurvivor 小地图
+
+给同一个游戏加一块**半透明小地图**（默认在左上角、血条下面），以你为中心把地形和场上的东西画出来。**纯只读**：不写游戏数据，不改游戏行为，也就不影响排名判定。
+
+| 图例 | 是什么 |
+| :--- | :--- |
+| 白色五角星 | 你（倒下变粉） |
+| 彩色圆点 | 联机队友 |
+| 小红点 | 普通敌人 |
+| 大金圆点（呼吸） | Boss —— 出了范围会贴在小地图边框上指方向 |
+| 青色点带圈 | 闪光（Shiny） |
+| 金色小方块 / 大方块 + 锁孔 + 光晕 | 小宝箱 / 大宝箱 |
+| 彩色菱形 / 薄荷绿空心圈 | 祭坛（加成柱子，用过的画成空心）/ 泉眼 |
+| 紫色圆点 | 裂缝（竞技场会画一圈虚线，出范围贴边框） |
+| 金色 / 紫色小点 | 掉落物 / 票 |
+| 彩色叉号 | 陷阱（中毒紫 · 黏液绿 · 爆炸橙） |
+
+地形按「走没走过」记账：**亮色 = 能走**，蓝色 = 水 / 岩浆，**暗到发黑 = 过不去**（石墙、树、石头）；没探索过的地方是偏蓝的深灰，不会和黑墙看混。走过的区域会一直留着，越玩越全。
+
+### 操作
+
+| 操作 | 作用 |
+| :--- | :--- |
+| `M` | 显示 / 隐藏小地图 |
+| `Alt` + 左键拖动 | 挪到任意位置（松手记住） |
+| `Alt` + 拖右下角 | 缩放，96–640px |
+| 油猴菜单 → **小地图：设置面板…** | 开关、地形 / 物件点、大小（滑块或直接输数字）、覆盖范围（1200 / 1800 / 2600 世界px）、透明度、位置、恢复默认 |
+
+### 它是怎么拿到游戏状态的
+
+发布版把整个游戏关在闭包里做了混淆（`index.html` + `js/app.min.js`），`window.G` 不存在、控制台也摸不到游戏对象。小地图只需要「看」，所以用了个只读的办法：在 `Object.prototype` 上给 G 的属性名（`U`、`World`、`Game`、`EnemyMgr`……）装上 setter，谁给对象赋这些属性，`this` 就是那个 `G`；一旦认出 `G`，setter 立刻自毁并把值原样写回成对象自身的属性，游戏那边感觉不到区别（几十毫秒内其余陷阱全部撤掉）。抓不到就什么都不做 —— 不报错、不刷屏、不影响游戏。
+
+### 已知边界
+
+- 游戏换压缩方式后可能抓不到 `G`，此时脚本静默不工作（游戏本身不受影响）；
+- `@match` 只覆盖 `pokesurvivor.com` / `www.pokesurvivor.com` / `pokesurvivor.games`（与两份汉化脚本一致），要在本地 `localhost` 调试得自己加一行 `@match`；
+- 和两份汉化脚本**可以同时装**，互不干扰（小地图画在自己的 canvas 覆盖层上，招牌文字只有边框上的那个 `N`）。
 
 ---
 
@@ -58,9 +98,10 @@
 ```
 yiyuan-userscripts/
 └── pokesurvivor/
-    ├── README.md                      项目说明：装哪个、覆盖率、已知边界
-    ├── pokesurvivor-zh-es.user.js     西语源（推荐）
-    ├── pokesurvivor-zh-en.user.js     英语源
+    ├── README.md                      项目说明：装哪个、覆盖率、图例、已知边界
+    ├── pokesurvivor-zh-es.user.js     中文化 · 西语源（推荐）
+    ├── pokesurvivor-zh-en.user.js     中文化 · 英语源
+    ├── pokesurvivor-minimap.user.js   局内小地图（只读）
     └── tools/                         维护工具（玩游戏不需要 Node）
         ├── README.md
         ├── audit.js                     一键审计：找出还没翻译的游戏文案
@@ -73,6 +114,7 @@ yiyuan-userscripts/
 ## 计划
 
 - [x] PokéSurvivor 汉化：西语源 + 英语源，游戏本体全覆盖
+- [x] PokéSurvivor 小地图：地形 / 敌人 / Boss / 物件 / 裂缝 / 队友，只读不写
 - [ ] 更多脚本？（欢迎来点单）
 
 ---
@@ -81,5 +123,5 @@ yiyuan-userscripts/
 
 - 游戏本体：[JPTER78/pokesurvivor](https://github.com/JPTER78/pokesurvivor)，代码自 2026-10-14 起为 PolyForm Noncommercial 1.0.0。
 - 精灵图：[PMD SpriteCollab](https://sprites.pmdcollab.org/)（CC BY-NC 4.0）。
-- Pokémon © Nintendo / Creatures Inc. / GAME FREAK inc.；本项目与上述公司无关联，只是爱好者做的汉化，不含任何游戏资源，也不用于盈利。
+- Pokémon © Nintendo / Creatures Inc. / GAME FREAK inc.；本项目与上述公司无关联，只是爱好者做的汉化和辅助脚本，不含任何游戏资源，也不用于盈利。
 - 本仓库里的脚本可以随意使用、修改、分发；如果能注明出处就更好。
